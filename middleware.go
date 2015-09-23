@@ -60,18 +60,3 @@ func Logging(log *logrus.Logger) Middleware {
 		})
 	}
 }
-
-//func Logging(o io.Writer) Middleware {
-//	return func(h http.Handler) http.Handler {
-//		return handlers.CombinedLoggingHandler(o, h)
-//	}
-//}
-
-// func Logging(l *log.Logger) Middleware {
-// 	return func(h http.Handler) http.Handler {
-// 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-// 			l.Printf("%s %s %s\n", r.Proto, r.Method, r.URL)
-// 			h.ServeHTTP(w, r)
-// 		})
-// 	}
-// }

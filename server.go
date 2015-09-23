@@ -28,6 +28,7 @@ func (s *server) Run() error {
 		)}
 	http2.ConfigureServer(server, nil)
 
+	s.logger.Infof("Serving on: %s", s.config.Address)
 	if s.config.IsTLS {
 		return server.ListenAndServeTLS(s.config.TLSCertFile, s.config.TLSKeyFile)
 	}
