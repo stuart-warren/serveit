@@ -47,6 +47,6 @@ func (p Permitted) AllowUsers(users ...string) Permitted {
 }
 
 func (p Permitted) AllowGroups(groups ...string) Permitted {
-	p.users = append(p.groups, groups...)
+	p.groups = append(p.groups, groups...)
 	return p
 }
