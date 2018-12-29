@@ -1,5 +1,7 @@
 package middleware
 
+import "net/http"
+
 type Middleware func(http.Handler) http.Handler
 
 func Decorate(h http.Handler, m ...Middleware) http.Handler {

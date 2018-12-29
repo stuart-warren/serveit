@@ -26,6 +26,7 @@ var CheckMethod = func(w http.ResponseWriter, r *http.Request, route router.Rout
 var CheckUser = func(w http.ResponseWriter, r *http.Request, route router.Route) bool {
 	users := route.Permitted().Users()
 	for _, u := range users {
+		// FIXME - insecure
 		if u == "ALL" || u == r.Header.Get("User") {
 			return true
 		}

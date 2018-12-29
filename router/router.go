@@ -129,7 +129,7 @@ func (o *Router) Handle(route Route) {
 	o.routes = append(o.routes, route)
 }
 
-func (o Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (o *Router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, route := range o.routes {
 		if route.Match(r.URL.Path) {
 			if o.authorized(w, r, route) {
