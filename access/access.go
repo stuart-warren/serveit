@@ -27,12 +27,12 @@ func (p Permitted) Groups() []string {
 }
 
 func (p Permitted) MethodRO() Permitted {
-	p.methods = []string{"GET"}
+	p.methods = []string{"HEAD", "GET"}
 	return p
 }
 
 func (p Permitted) MethodRW() Permitted {
-	p.methods = []string{"GET", "PUT", "POST", "PATCH"}
+	p.methods = []string{"HEAD", "GET", "PUT", "POST", "PATCH"}
 	return p
 }
 
