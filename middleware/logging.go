@@ -1,4 +1,4 @@
-package logging
+package middleware
 
 import (
 	"log"
@@ -20,7 +20,7 @@ func (lrw *loggingResponseWriter) WriteHeader(code int) {
 	lrw.ResponseWriter.WriteHeader(code)
 }
 
-func Handler() func(http.Handler) http.Handler {
+func Logging() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			t1 := time.Now()

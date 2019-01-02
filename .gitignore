@@ -1,4 +1,6 @@
 serveit
+env
+*.json
 
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
