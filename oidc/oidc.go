@@ -30,6 +30,7 @@ type oidcAuthBuilder struct {
 	cipher                                        encryption.Cipher
 	clientID, clientSecret, redirectURL, provider string
 	scopes                                        []string
+	privateKey                                    []byte
 	ctx                                           context.Context
 }
 
@@ -38,7 +39,7 @@ type IDToken = oidc.IDToken
 func NewOIDCAuth(clientID, clientSecret, redirectURL string) oidcAuthBuilder {
 	return oidcAuthBuilder{
 		ctx:          context.Background(),
-		cipher:       encryption.NewMiscreantCipher(encryption.GenerateKey()), // FIXME, this will stop other instances decrypting?
+		privateKey:   encryption.GenerateKey(),
 		provider:     "https://accounts.google.com",
 		scopes:       []string{"profile", "email"},
 		clientID:     clientID,
@@ -62,6 +63,12 @@ func (ob oidcAuthBuilder) WithScopes(scopes []string) oidcAuthBuilder {
 	return ob
 }
 
+// WithPrivate key takes a 32bit key from encryption.GenerateKey()
+func (ob oidcAuthBuilder) WithPrivateKey(key []byte) oidcAuthBuilder {
+	ob.privateKey = key
+	return ob
+}
+
 func (ob oidcAuthBuilder) Build() (OIDCAuth, error) {
 	provider, err := oidc.NewProvider(ob.ctx, ob.provider)
 	if err != nil {
@@ -77,14 +84,12 @@ func (ob oidcAuthBuilder) Build() (OIDCAuth, error) {
 			Scopes:       ob.scopes,
 		},
 		verifier: provider.Verifier(&oidc.Config{ClientID: ob.clientID}),
-		cipher:   ob.cipher,
+		cipher:   encryption.NewMiscreantCipher(ob.privateKey),
 	}, nil
 }
 
 // HandleRedirect creates a session nonce, encrypts it in a cookie, builds a secret state and redirects user to auth service
 func (o OIDCAuth) HandleRedirect(w http.ResponseWriter, r *http.Request) {
-	//TODO: change to middleware
-	// check for auth, if valid, don't redirect
 	nonce := fmt.Sprintf("%x", encryption.GenerateKey())
 	http.SetCookie(w, &http.Cookie{
 		Name:     NonceCookie,

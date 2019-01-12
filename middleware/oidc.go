@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -38,6 +39,8 @@ func OIDC(oidcAuth Verifier, redirectTo string, dontRedirect []string) func(http
 					}
 					err = tkn.Claims(&claims)
 					r.Header.Set("User", claims.Email)
+					r.Header.Set("Authorisation", fmt.Sprintf("Bearer %s", jwt))
+					w.Header().Set("X-JWT", string(jwt))
 					next.ServeHTTP(w, r)
 					return
 
