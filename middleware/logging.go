@@ -1,4 +1,4 @@
-package logging
+package middleware
 
 import (
 	"log"
@@ -20,7 +20,7 @@ func (lrw *loggingResponseWriter) WriteHeader(code int) {
 	lrw.ResponseWriter.WriteHeader(code)
 }
 
-func Handler() func(http.Handler) http.Handler {
+func Logging() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			t1 := time.Now()
@@ -28,7 +28,7 @@ func Handler() func(http.Handler) http.Handler {
 			next.ServeHTTP(lrw, r)
 			t2 := time.Now()
 			statusCode := lrw.statusCode
-			log.Printf("[%s] %q %v %d", r.Method, r.URL.String(), t2.Sub(t1), statusCode)
+			log.Printf("[%s] %q %q %v %d", r.Method, r.URL.String(), r.Header.Get("User"), t2.Sub(t1), statusCode)
 		})
 	}
 }
