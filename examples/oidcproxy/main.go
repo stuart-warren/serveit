@@ -31,7 +31,7 @@ func main() {
 	mux.HandleFunc("/callback", oidcAuth.HandleCallBack)
 	mux.HandleFunc("/auth", oidcAuth.HandleRedirect)
 	mux.HandleFunc("/", httputil.NewSingleHostReverseProxy(proxyURL).ServeHTTP)
-	srv := &http.Server{Addr: ":1234", Handler: middleware.Decorate(mux, middleware.Logging(), middleware.OIDC(oidcAuth, "/auth"))}
+	srv := &http.Server{Addr: ":1234", Handler: middleware.Decorate(mux, middleware.OIDC(oidcAuth, "/auth", []string{"/auth", "/callback"}), middleware.Logging())}
 	log.Printf("starting at %s\n", srv.Addr)
 	log.Fatal(srv.ListenAndServe())
 }

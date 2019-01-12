@@ -28,7 +28,7 @@ func Logging() func(http.Handler) http.Handler {
 			next.ServeHTTP(lrw, r)
 			t2 := time.Now()
 			statusCode := lrw.statusCode
-			log.Printf("[%s] %q %v %d", r.Method, r.URL.String(), t2.Sub(t1), statusCode)
+			log.Printf("[%s] %q %q %v %d", r.Method, r.URL.String(), r.Header.Get("User"), t2.Sub(t1), statusCode)
 		})
 	}
 }
