@@ -2,6 +2,7 @@ package middleware_test
 
 import (
 	"bytes"
+	"context"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -11,10 +12,15 @@ import (
 	"github.com/stuart-warren/serveit/oidc"
 )
 
+type MockVerifier struct{}
+
+func (m MockVerifier) Verify(ctx context.Context, redirectTo string) (*oidc.IDToken, error) {
+	return &oidc.IDToken{}, nil
+}
 func TestOIDCMiddleware(t *testing.T) {
 
-	oidcAuth, _ := oidc.NewOIDCAuth("", "", "/callback").Build()
-	oidcMiddleware := middleware.OIDC(oidcAuth, "/auth", []string{"/auth", "/callback"})
+	oidcAuth := MockVerifier{}
+	oidcMiddleware := middleware.OIDC(middleware.NewOIDCMiddlewareConfig(oidcAuth))
 	ts := httptest.NewServer(oidcMiddleware(GetTestHandler()))
 	defer ts.Close()
 

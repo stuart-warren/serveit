@@ -24,14 +24,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	proxyURL, err := url.ParseRequestURI("http://localhost:8000")
+	proxyURL, err := url.ParseRequestURI("http://192.168.99.100:8080")
 	if err != nil {
 		log.Fatal(err)
 	}
 	mux.HandleFunc("/callback", oidcAuth.HandleCallBack)
 	mux.HandleFunc("/auth", oidcAuth.HandleRedirect)
 	mux.HandleFunc("/", httputil.NewSingleHostReverseProxy(proxyURL).ServeHTTP)
-	srv := &http.Server{Addr: ":1234", Handler: middleware.Decorate(mux, middleware.OIDC(oidcAuth, "/auth", []string{"/auth", "/callback"}), middleware.Logging())}
+	srv := &http.Server{Addr: ":1234", Handler: middleware.Decorate(mux, middleware.OIDC(middleware.NewOIDCMiddlewareConfig(oidcAuth)), middleware.Logging())}
 	log.Printf("starting at %s\n", srv.Addr)
 	log.Fatal(srv.ListenAndServe())
 }

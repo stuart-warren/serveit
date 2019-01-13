@@ -16,6 +16,7 @@ const (
 	NonceCookie    = "NONCE"
 	JWTCookie      = "JWT"
 	RedirectCookie = "REDIRECT"
+	JWTHeader      = "X-JWT"
 	StateStringFmt = "%v|%v"
 )
 
@@ -24,6 +25,8 @@ type OIDCAuth struct {
 	oauth2Config oauth2.Config
 	verifier     *oidc.IDTokenVerifier
 	cipher       encryption.Cipher
+	secureCookie bool
+	now          func() time.Time
 }
 
 type oidcAuthBuilder struct {
@@ -32,6 +35,8 @@ type oidcAuthBuilder struct {
 	scopes                                        []string
 	privateKey                                    []byte
 	ctx                                           context.Context
+	secureCookie                                  bool
+	now                                           func() time.Time
 }
 
 type IDToken = oidc.IDToken
@@ -45,6 +50,8 @@ func NewOIDCAuth(clientID, clientSecret, redirectURL string) oidcAuthBuilder {
 		clientID:     clientID,
 		clientSecret: clientSecret,
 		redirectURL:  redirectURL,
+		secureCookie: true,
+		now:          time.Now,
 	}
 }
 
@@ -60,6 +67,16 @@ func (ob oidcAuthBuilder) WithProvider(provider string) oidcAuthBuilder {
 
 func (ob oidcAuthBuilder) WithScopes(scopes []string) oidcAuthBuilder {
 	ob.scopes = append(scopes, oidc.ScopeOpenID)
+	return ob
+}
+
+func (ob oidcAuthBuilder) WithInsecureCookies() oidcAuthBuilder {
+	ob.secureCookie = false
+	return ob
+}
+
+func (ob oidcAuthBuilder) WithNowFunc(now func() time.Time) oidcAuthBuilder {
+	ob.now = now
 	return ob
 }
 
@@ -94,8 +111,8 @@ func (o OIDCAuth) HandleRedirect(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     NonceCookie,
 		Value:    base64.URLEncoding.EncodeToString(must(o.cipher.Encrypt([]byte(nonce)))),
-		Expires:  time.Now().Add(5 * time.Minute),
-		Secure:   false, //FIXME
+		Expires:  o.now().Add(5 * time.Minute),
+		Secure:   o.secureCookie,
 		SameSite: http.SameSiteStrictMode,
 		Path:     "/",
 		HttpOnly: true,
@@ -169,7 +186,7 @@ func (o OIDCAuth) HandleCallBack(w http.ResponseWriter, r *http.Request) {
 		Name:     JWTCookie,
 		Value:    base64.URLEncoding.EncodeToString([]byte(rawIDToken)),
 		Expires:  idToken.Expiry,
-		Secure:   false, //FIXME
+		Secure:   o.secureCookie,
 		SameSite: http.SameSiteStrictMode,
 		Path:     "/",
 		HttpOnly: true,
